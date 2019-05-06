@@ -53,6 +53,7 @@ def get_config():
     # Define defaults
     config['APP'] = {
         'compress': args.compress,
+        'tmp_path': 'tmp',
     }
     config['MYSQL'] = {
         'host': 'localhost',
@@ -75,10 +76,10 @@ def get_config():
 
 # Parse CLI arguments
 def get_args():
-    parser = argparse.ArgumentParser('Dump arbitrary MySQL database to Google Drive')
+    parser = argparse.ArgumentParser(description='Dump MySQL database to Google Drive')
     parser.add_argument('database', help='Name of database to dump')
     parser.add_argument('--config', help='Path to config file; defaults to config.ini', default='config.ini')
-    parser.add_argument('--compress', help='Compress resulting output; defaults to gzip', choices=['none', 'gz', 'bz2', 'zip'], default='gz')
+    parser.add_argument('--compress', help='Compress resulting output; defaults to gz', choices=['none', 'gz', 'bz2', 'zip'], default='gz')
 
     args = parser.parse_args()
     return args
@@ -94,7 +95,7 @@ def get_gdrive_cmd(config):
 
     # Check binary exists
     if not os.path.isfile(gdrive_bin):
-        print('Error' + gdrive_bin +
+        print('Error: ' + gdrive_bin +
               ' is not found, please download from https://github.com/gdrive-org/gdrive#downloads')
         exit(1)
 
