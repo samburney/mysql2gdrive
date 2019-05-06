@@ -1,0 +1,13 @@
+[APP]
+tmp_path = tmp
+
+[MYSQL]
+host = 127.0.0.1
+port = 3306
+username = username
+password = password
+
+[GDRIVE]
+binary_path = bin
+config_path = .gdrive
+parent_directory = 

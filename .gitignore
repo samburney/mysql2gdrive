@@ -1,0 +1,7 @@
+bin/
+venv/
+.gdrive/
+tmp/
+
+config.ini
+.DS_Store
