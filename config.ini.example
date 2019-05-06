@@ -10,4 +10,4 @@ password = password
 [GDRIVE]
 binary_path = bin
 config_path = .gdrive
-parent_directory = 
+parent_folder = 
