@@ -15,9 +15,12 @@ script_root = os.path.dirname(os.path.realpath(__file__))
 
 def main():
     config = get_config()
-    tmp_file = os.path.join(
+    tmp_path = os.path.join(
         script_root,
         config['APP']['tmp_path'],
+    )
+    tmp_file = os.path.join(
+        tmp_path,
         config['MYSQL']['database'] + '_tmp.sql',
     )
     out_file = tmp_file
@@ -31,9 +34,21 @@ def main():
         config['MYSQL']['database'],
     ]
     
+    # Create tmp_path if it doesn't exist
+    if os.path.exists(tmp_path) and not os.path.isdir(tmp_path):
+        print('Error: ' + tmp_path + ' already exists but is not a directory')
+        exit(1)
+    elif not os.path.exists(tmp_path):
+        os.mkdir(tmp_path)
+
     # Write SQL file
-    with open(tmp_file, 'w') as f:
-        subprocess.call(sql_cmd, stdout = f)
+    with open(tmp_file, 'w') as out_file:
+        result = subprocess.call(sql_cmd, stdout = out_file)
+        
+        # If mysqldump failed, clean up tmp_file
+        if result != 0:
+            os.unlink(tmp_file)
+            exit(result)
 
     # Handle compression
     if config['APP']['compress'].lower() != 'none':
@@ -103,7 +118,7 @@ def get_gdrive_cmd(config):
     if not os.path.isdir(gdrive_config):
         print(
             'Error: ' + gdrive_config + ' does not exist.  To create it and login, please run: \n\n'
-            + '\t\t' + gdrive_bin + ' -c ' + gdrive_config + ' about'
+            + '\t' + gdrive_bin + ' -c ' + gdrive_config + ' about\n'
         )
         exit(1)
 
