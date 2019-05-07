@@ -13,6 +13,7 @@ git clone https://github.com/samburney/mysql2gdrive.git
 # Download gdrive - Get the correct URL for your platform from here: https://github.com/gdrive-org/gdrive/blob/master/README.md#downloads
 mkdir mysql2gdrive/bin
 wget -O mysql2gdrive/bin/gdrive <URL>
+chmod +x mysql2gdrive/bin/gdrive
 
 # Copy example config.ini and configure for your environment
 cp mysql2gdrive/config.ini.example mysql2gdrive/config.ini
