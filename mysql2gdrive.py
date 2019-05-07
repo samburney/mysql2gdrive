@@ -30,12 +30,14 @@ def main():
         if sql_name != None:
             sql_names.append(sql_name)
         
-    # Upload to Google Drive
-    upload_result = gdrive_upload(sql_name, config['GDRIVE']['parent_folder'])
+    # Upload to Google Drive and delete temporary files on success
+    for sql_name in sql_names:
+        upload_result = gdrive_upload(sql_name, config['GDRIVE']['parent_folder'])
 
-    # Delete temporary file(s) and return gdrive process result
-    os.unlink(sql_name)
-    sys.exit(upload_result.returncode)
+        if upload_result.returncode == 0:
+            os.unlink(sql_name)
+        else:
+            print(f"Warning: An upload error has occurred so {sql_name} has not been deleted.", file=sys.stderr)
 
 
 # Get config from config file
@@ -195,7 +197,7 @@ def get_mysql_dump(database):
 
     # Write SQL file
     with open(tmp_name, 'w') as tmp_file:
-        print(f'Dumping {database}...')
+        print(f'Dumping database {database} to {tmp_name}')
         result = subprocess.run(sql_cmd, stdout=tmp_file)
 
         # Immediately delete creds file
@@ -228,3 +230,4 @@ def get_tmp_path(config):
 
 # Run!
 main()
+exit(0)
