@@ -13,7 +13,7 @@ from datetime import datetime
 
 
 # Check Python version
-if sys.version_info.major < 3 and sys.version_info.minor < 6:
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 6):
     print('Error: Python 3.6.0 or newer is required', file=sys.stderr)
     exit(1) 
 
