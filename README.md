@@ -5,6 +5,8 @@ Written in Python and is just a wrapper for *mysqldump* and *[gdrive](https://gi
 
 Tested in Linux and MacOS.  Semi-tested in Windows but may not work.
 
+Requires Python 3.6.x or newer.
+
 ## Installation
 ```
 # Get mysql2gdrive script
