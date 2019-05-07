@@ -93,14 +93,15 @@ def check_gdrive_cmd(config):
     # Check binary exists
     if not os.path.isfile(gdrive_cmd[0]):
         print('Error: ' + gdrive_cmd[0] +
-              ' is not found, please download from https://github.com/gdrive-org/gdrive#downloads')
+              ' is not found, please download from https://github.com/gdrive-org/gdrive#downloads', file=sys.stderr)
         sys.exit(1)
 
     # Check config exists
     if not os.path.isdir(gdrive_cmd[2]):
         print(
             'Error: ' + gdrive_cmd[2] + ' does not exist.  To create it and login, please run: \n\n'
-            + '\t' + gdrive_cmd[0] + ' -c ' + gdrive_cmd[2] + ' about\n'
+            + '\t' + gdrive_cmd[0] + ' -c ' + gdrive_cmd[2] + ' about\n',
+            file=sys.stderr,
         )
         sys.exit(1)
 
@@ -147,6 +148,7 @@ def compress_file(in_name, format):
 
     # Handle compression
     out_name = in_name + '.' + format
+    print(f'Compressing {out_name}')
     if(format == 'gz'):
         with open(in_name, 'rb') as in_file:
             with gzip.open(out_name, 'wb') as out_file:
@@ -161,8 +163,8 @@ def compress_file(in_name, format):
 
     # Error if compression not possible
     else:
-        print('Error: Unsupported compression format')
-        sys.exit(1)
+        print('Error: Unsupported compression format', file=sys.stderr)
+        return in_name
 
     os.unlink(in_name)
     return out_name
@@ -220,7 +222,7 @@ def get_tmp_path(config):
 
     # Create tmp_path if it doesn't exist
     if os.path.exists(tmp_path) and not os.path.isdir(tmp_path):
-        print('Error: ' + tmp_path + ' already exists but is not a directory')
+        print('Error: ' + tmp_path + ' already exists but is not a directory', file=sys.stderr)
         sys.exit(1)
     elif not os.path.exists(tmp_path):
         os.mkdir(tmp_path)
@@ -230,4 +232,3 @@ def get_tmp_path(config):
 
 # Run!
 main()
-exit(0)
