@@ -9,18 +9,25 @@ import gzip
 import bz2
 import zipfile
 import shutil
+from datetime import datetime
 
 
 def main():
     config = get_config()
+    check_gdrive_cmd(config)
 
-    # Make SQL dump and upload to Google Drive
-    sql_name = get_mysql_dump()
+    # Make SQL dump(s) to local file(s)
+    sql_names = []
+    for database in config['MYSQL']['databases'].split(','):    
+        sql_name = get_mysql_dump(database)
+        if sql_name != None:
+            sql_names.append(sql_name)
+        
+    # Upload to Google Drive
     upload_result = gdrive_upload(sql_name, config['GDRIVE']['parent_folder'])
 
     # Delete temporary file(s) and return gdrive process result
     os.unlink(sql_name)
-
     sys.exit(upload_result.returncode)
 
 
@@ -44,7 +51,7 @@ def get_config():
         'port': '3306',
         'username': 'username',
         'password': 'password',
-        'database': args.database,
+        'databases': ','.join(args.databases),
     }
     config['GDRIVE'] =  {
         'binary_path': 'bin',
@@ -61,12 +68,30 @@ def get_config():
 # Parse CLI arguments
 def get_args():
     parser = argparse.ArgumentParser(description='Dump MySQL database to Google Drive')
-    parser.add_argument('database', help='Name of database to dump')
+    parser.add_argument('databases', help='Name of database(s) to dump', nargs='+')
     parser.add_argument('--config', help='Path to config file; defaults to config.ini', default='config.ini')
     parser.add_argument('--compress', help='Compress resulting output; defaults to gz', choices=['none', 'gz', 'bz2', 'zip'], default='gz')
 
     args = parser.parse_args()
     return args
+
+
+def check_gdrive_cmd(config):
+    gdrive_cmd = get_gdrive_cmd(config)
+
+    # Check binary exists
+    if not os.path.isfile(gdrive_cmd[0]):
+        print('Error: ' + gdrive_cmd[0] +
+              ' is not found, please download from https://github.com/gdrive-org/gdrive#downloads')
+        sys.exit(1)
+
+    # Check config exists
+    if not os.path.isdir(gdrive_cmd[2]):
+        print(
+            'Error: ' + gdrive_cmd[2] + ' does not exist.  To create it and login, please run: \n\n'
+            + '\t' + gdrive_cmd[0] + ' -c ' + gdrive_cmd[2] + ' about\n'
+        )
+        sys.exit(1)
 
 
 # Determine CLI command to run to use gdrive util
@@ -76,20 +101,6 @@ def get_gdrive_cmd(config):
         config['APP']['script_path'], config['GDRIVE']['binary_path'], 'gdrive')
     gdrive_config = os.path.join(config['APP']['script_path'], config['GDRIVE']['config_path'])
     gdrive_cmd = [gdrive_bin, '-c', gdrive_config]
-
-    # Check binary exists
-    if not os.path.isfile(gdrive_bin):
-        print('Error: ' + gdrive_bin +
-              ' is not found, please download from https://github.com/gdrive-org/gdrive#downloads')
-        sys.exit(1)
-
-    # Check config exists
-    if not os.path.isdir(gdrive_config):
-        print(
-            'Error: ' + gdrive_config + ' does not exist.  To create it and login, please run: \n\n'
-            + '\t' + gdrive_bin + ' -c ' + gdrive_config + ' about\n'
-        )
-        sys.exit(1)
 
     return gdrive_cmd
 
@@ -111,7 +122,6 @@ def gdrive_upload(file_path, gdrive_folder=None):
         *upload_options,
         file_path
     ]
-    print(upload_cmd)
 
     return subprocess.run(upload_cmd)
 
@@ -148,12 +158,13 @@ def compress_file(in_name, format):
 
 
 # Make SQL dump
-def get_mysql_dump():
+def get_mysql_dump(database):
     config = get_config()
 
     tmp_path = get_tmp_path(config)
-    tmp_name = os.path.join(tmp_path, config['MYSQL']['database'] + '_tmp.sql')
-    creds_name = os.path.join(tmp_path, '.' + config['MYSQL']['database'] + '_creds.ini')
+    creds_name = os.path.join(tmp_path, '.creds.ini')
+
+    tmp_name = os.path.join(tmp_path, f"{database}_{datetime.now():%Y%m%d-%H%M}.sql")
 
     # Make temporary SQL credentials file (Suppress CLI password warning)
     sql_config = configparser.ConfigParser()
@@ -170,7 +181,7 @@ def get_mysql_dump():
         '--defaults-extra-file=' + creds_name,
         '-h' + config['MYSQL']['host'],
         '-P' + config['MYSQL']['port'],
-        config['MYSQL']['database'],
+        database,
     ]
 
     # Write SQL file
@@ -183,7 +194,7 @@ def get_mysql_dump():
         # If mysqldump failed, clean up tmp_name
         if result.returncode != 0:
             os.unlink(tmp_name)
-            sys.exit(result.returncode)
+            return None
 
     # Handle compression
     out_name = compress_file(tmp_name, config['APP']['compress'])
