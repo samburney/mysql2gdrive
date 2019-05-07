@@ -67,6 +67,7 @@ def get_config():
         'gdrive_path': f'bin{os.path.sep}gdrive',
         'config_path': '.gdrive',
         'parent_folder': None,
+        'chunk_size': 1,
     }
 
     # Read defined config file
@@ -124,6 +125,7 @@ def gdrive_upload(file_path, gdrive_folder=None):
     gdrive_cmd = get_gdrive_cmd(config)
     upload_options = [
         'upload',
+        '--chunksize', str(float(config['GDRIVE']['chunk_size']) * float(8388608)),
     ]
 
     if gdrive_folder:

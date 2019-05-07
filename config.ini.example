@@ -12,3 +12,4 @@ mysqldump_path =
 gdrive_path = bin/gdrive
 config_path = .gdrive
 parent_folder = 
+chunk_size = 1
