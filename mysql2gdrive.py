@@ -193,6 +193,7 @@ def get_mysql_dump(database):
 
     # Write SQL file
     with open(tmp_name, 'w') as tmp_file:
+        print(f'Dumping {database}...')
         result = subprocess.run(sql_cmd, stdout=tmp_file)
 
         # Immediately delete creds file
