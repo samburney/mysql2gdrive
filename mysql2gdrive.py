@@ -74,9 +74,11 @@ def get_config():
 
 # Parse CLI arguments
 def get_args():
+    script_path = os.path.dirname(os.path.realpath(__file__))
+
     parser = argparse.ArgumentParser(description='Dump MySQL database to Google Drive')
     parser.add_argument('databases', help='Name of database(s) to dump', nargs='+')
-    parser.add_argument('--config', help='Path to config file; defaults to config.ini', default='config.ini')
+    parser.add_argument('--config', help=f"Path to config file; defaults to {os.path.join(script_path, 'config.ini')}", default='config.ini')
     parser.add_argument('--compress', help='Compress resulting output; defaults to gz', choices=['none', 'gz', 'bz2', 'zip'], default='gz')
 
     args = parser.parse_args()
