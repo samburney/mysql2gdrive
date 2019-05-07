@@ -61,9 +61,10 @@ def get_config():
         'username': 'username',
         'password': 'password',
         'databases': ','.join(args.databases),
+        'mysqldump_path': None,
     }
     config['GDRIVE'] =  {
-        'binary_path': 'bin',
+        'gdrive_path': f'bin{os.path.sep}gdrive',
         'config_path': '.gdrive',
         'parent_folder': None,
     }
@@ -110,7 +111,7 @@ def check_gdrive_cmd(config):
 def get_gdrive_cmd(config):
     # Apply path logic to supplied paths
     gdrive_bin = os.path.join(
-        config['APP']['script_path'], config['GDRIVE']['binary_path'], 'gdrive')
+        config['APP']['script_path'], config['GDRIVE']['gdrive_path'])
     gdrive_config = os.path.join(config['APP']['script_path'], config['GDRIVE']['config_path'])
     gdrive_cmd = [gdrive_bin, '-c', gdrive_config]
 
@@ -174,6 +175,9 @@ def compress_file(in_name, format):
 def get_mysql_dump(database):
     config = get_config()
 
+    mysqldump_path = 'mysqldump'
+    if config['MYSQL']['mysqldump_path'] != None and config['MYSQL']['mysqldump_path'] != '':
+        mysqldump_path = os.path.join(config['APP']['script_path'], config['MYSQL']['mysqldump_path'])
     tmp_path = get_tmp_path(config)
     creds_name = os.path.join(tmp_path, '.creds.ini')
 
@@ -186,11 +190,13 @@ def get_mysql_dump(database):
         'password': config['MYSQL']['password'],
     }
     with open(creds_name, 'w') as creds_file:
+        os.chmod(creds_name, 0o600)
         sql_config.write(creds_file)
+
 
     # Define SQL command to be run
     sql_cmd = [
-        'mysqldump',
+        mysqldump_path,
         '--defaults-extra-file=' + creds_name,
         '-h' + config['MYSQL']['host'],
         '-P' + config['MYSQL']['port'],

@@ -3,7 +3,7 @@ Dump MySQL database and upload to Google Drive.
 
 Written in Python and is just a wrapper for *mysqldump* and *[gdrive](https://github.com/gdrive-org/gdrive)*.
 
-Tested in Linux and MacOS.  Semi-tested in Windows but may not work.
+Tested to work in Linux, MacOS X, Windows 10 and Windows Subsystem for Linux (WSL).
 
 Requires Python 3.6.x or newer.
 
